@@ -1,3 +1,16 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = "us-east-1"
+}
+
 # 1. SNS Topic for Alerts
 resource "aws_sns_topic" "alerts" {
   name = "${var.project_name}-${var.environment}-alerts"
@@ -29,29 +42,6 @@ resource "aws_cloudwatch_metric_alarm" "high_cpu" {
   alarm_description   = "Alarm when EC2 CPU exceeds ${var.cpu_threshold}%"
   alarm_actions       = [aws_sns_topic.alerts.arn]
   ok_actions          = [aws_sns_topic.alerts.arn]
-
-  dimensions = {
-    InstanceId = var.instance_id
-  }
-
-  tags = {
-    Project     = var.project_name
-    Environment = var.environment
-  }
-}
-
-# 4. Status Check Failed Alarm (EC2 System/Instance check)
-resource "aws_cloudwatch_metric_alarm" "instance_health" {
-  alarm_name          = "${var.project_name}-${var.environment}-status-check-failed"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 1
-  metric_name         = "StatusCheckFailed"
-  namespace           = "AWS/EC2"
-  period              = 60
-  statistic           = "Maximum"
-  threshold           = 0
-  alarm_description   = "Alarm when EC2 instance or system health check fails"
-  alarm_actions       = [aws_sns_topic.alerts.arn]
 
   dimensions = {
     InstanceId = var.instance_id
