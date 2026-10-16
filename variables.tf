@@ -1,38 +1,38 @@
 variable "project_name" {
-  description = "Name of the project (e.g. warehouse, payment, auth)"
-  type        = string
+  type    = string
+  default = "warehouse"
 }
 
 variable "environment" {
-  description = "Environment (dev, staging, prod)"
-  type        = string
-  default     = "prod"
+  type    = string
+  default = "prod"
 }
 
 variable "alert_email" {
-  description = "Email address to receive alerts"
-  type        = string
+  type = string
 }
 
 variable "instance_id" {
-  description = "EC2 Instance ID to monitor"
+  type = string
+}
+
+variable "alert_type" {
   type        = string
+  description = "Type of alert: CPU, STATUS_CHECK, or ALL"
+  default     = "ALL"
 }
 
 variable "cpu_threshold" {
-  description = "CPU percentage threshold to trigger alarm"
-  type        = number
-  default     = 80
+  type    = number
+  default = 75
 }
 
 variable "evaluation_periods" {
-  description = "Number of periods to evaluate"
-  type        = number
-  default     = 2
+  type    = number
+  default = 2
 }
 
 variable "period_seconds" {
-  description = "The period in seconds over which the statistic is applied"
-  type        = number
-  default     = 60
+  type    = number
+  default = 60
 }
