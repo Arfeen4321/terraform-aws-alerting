@@ -18,13 +18,14 @@ variable "instance_id" {
 
 variable "alert_type" {
   type        = string
-  description = "Type of alert: CPU, STATUS_CHECK, or ALL"
+  description = "Type of alert: CPU, DISK, MEMORY, STATUS_CHECK, ALL"
   default     = "ALL"
 }
 
-variable "cpu_threshold" {
-  type    = number
-  default = 75
+variable "threshold" {
+  type        = number
+  description = "Threshold percentage"
+  default     = 75
 }
 
 variable "evaluation_periods" {

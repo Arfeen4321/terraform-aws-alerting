@@ -2,22 +2,21 @@ pipeline {
     agent any
 
     parameters {
-        choice(name: 'ACTION', choices: ['plan', 'apply', 'destroy'], description: 'Terraform Action')
-        choice(name: 'ALERT_TYPE', choices: ['ALL', 'CPU', 'STATUS_CHECK'], description: 'Type of Alarm to configure')
-        string(name: 'INSTANCE_ID', defaultValue: '', description: 'EC2 Instance ID to monitor (e.g. i-0abcd1234efgh)')
-        string(name: 'ALERT_EMAIL', defaultValue: 'mohdarfeen890@gmail.com', description: 'Email address to receive alerts')
-        string(name: 'CPU_THRESHOLD', defaultValue: '75', description: 'CPU Utilization Threshold %')
-        choice(name: 'ENVIRONMENT', choices: ['prod', 'staging', 'dev'], description: 'Environment name')
+        choice(name: 'ALERT_TYPE', choices: ['ALL', 'CPU', 'MEMORY', 'DISK', 'STATUS_CHECK'], description: '1. Type of Alert to configure')
+        string(name: 'THRESHOLD', defaultValue: '75', description: '2. Threshold percentage limit (e.g. 75, 80)')
+        string(name: 'ALERT_EMAIL', defaultValue: 'mohdarfeen890@gmail.com', description: '3. Email address to receive alert notifications')
+        choice(name: 'ACTION', choices: ['plan', 'apply', 'destroy'], description: '4. Terraform Action to perform')
+        choice(name: 'ENVIRONMENT', choices: ['prod', 'staging', 'dev'], description: '5. Environment name')
+        string(name: 'INSTANCE_ID', defaultValue: '', description: '6. Target EC2 Instance ID (e.g. i-002c7023f767fc78a)')
     }
 
     environment {
         AWS_DEFAULT_REGION = 'us-east-1'
-        // Map Jenkins UI parameters to Terraform TF_VAR_
-        TF_VAR_instance_id   = "${params.INSTANCE_ID}"
-        TF_VAR_alert_type    = "${params.ALERT_TYPE}"
-        TF_VAR_alert_email   = "${params.ALERT_EMAIL}"
-        TF_VAR_cpu_threshold = "${params.CPU_THRESHOLD}"
-        TF_VAR_environment   = "${params.ENVIRONMENT}"
+        TF_VAR_instance_id = "${params.INSTANCE_ID}"
+        TF_VAR_alert_type  = "${params.ALERT_TYPE}"
+        TF_VAR_alert_email = "${params.ALERT_EMAIL}"
+        TF_VAR_threshold   = "${params.THRESHOLD}"
+        TF_VAR_environment = "${params.ENVIRONMENT}"
     }
 
     stages {
@@ -25,9 +24,19 @@ pipeline {
             steps {
                 script {
                     if (!params.INSTANCE_ID) {
-                        error("❌ ERROR: INSTANCE_ID cannot be empty! Please provide your EC2 Instance ID.")
+                        error("❌ ERROR: INSTANCE_ID cannot be empty! Please provide an EC2 Instance ID.")
                     }
-                    echo "=== Configuring Alert: ${params.ALERT_TYPE} for Instance: ${params.INSTANCE_ID} ==="
+                    echo """
+                    ======================================================
+                    🚀 TRIGGERING INFRA ALERT PIPELINE WITH PARAMETERS:
+                    - Alert Type    : ${params.ALERT_TYPE}
+                    - Threshold     : ${params.THRESHOLD}%
+                    - Email         : ${params.ALERT_EMAIL}
+                    - Action        : ${params.ACTION}
+                    - Environment   : ${params.ENVIRONMENT}
+                    - EC2 Instance  : ${params.INSTANCE_ID}
+                    ======================================================
+                    """
                 }
             }
         }
@@ -51,7 +60,7 @@ pipeline {
                 expression { params.ACTION == 'apply' }
             }
             steps {
-                echo "=== Applying to AWS ==="
+                echo "=== Applying to AWS CloudWatch & SNS ==="
                 sh 'terraform apply -auto-approve tfplan'
             }
         }
