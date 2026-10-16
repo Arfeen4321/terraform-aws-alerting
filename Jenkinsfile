@@ -13,7 +13,7 @@ pipeline {
         stage('1. Terraform Init') {
             steps {
                 echo "=== Initializing Terraform and Modules ==="
-                sh 'terraform init'
+                sh 'terraform init -upgrade'
             }
         }
 
